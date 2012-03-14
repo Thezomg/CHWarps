@@ -1,0 +1,6 @@
+# Subject to major change!
+
+*:/chwarpadd $name [$] = _warp_create($name)
+*:/chwarpto $name [$] = _warp_to($name)
+*:/chwarpprivate $name $private = _warp_private($name, $private)
+*:/chwarpshare $name $player $share = _warp_share($name, $player, $share)
