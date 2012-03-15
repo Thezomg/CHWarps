@@ -11,31 +11,8 @@
 #     |              +-...
 #     |
 #     +-options
-
-proc(_get_warp, @n,
-    assign(@name, to_lower(@n))
-    
-    if(_warp_exists(@name),
-        assign(@info, get_value(concat('entityreborn.chwarps.warps.', @name)))
-        return(@info)
-    )
-    
-    return(false)
-)
-
-proc(_set_warp, @n, @warp,
-    assign(@name, to_lower(@n))
-    
-    store_value(concat('entityreborn.chwarps.warps.', @name), @warp)
-)
-
-proc(_warp_exists, @name,
-    if(not(has_value(concat('entityreborn.chwarps.warps.', to_lower(@name)))),
-        return(false)
-    )
-    
-    return(true)
-)
+include('util.ms')
+include('dispatch.ms')
 
 proc(_warp_create, @n,
     assign(@name, to_lower(@n))
@@ -64,9 +41,9 @@ proc(_warp_private, @n, @p,
     
     # Allow multiple types of input.
     switch(to_lower(@p),
-        array('yes', '1', 'true', 'on'),
+        'private',
             assign(@private, true),
-        array('no', '0', 'false', 'off'),  
+        'public',  
             assign(@private, false),
         die('Invalid option.')
     )
@@ -99,12 +76,10 @@ proc(_warp_share, @n, @p, assign(@s, true),
     assign(@player, to_lower(@p))
     assign(@name, to_lower(@n))
     
-    # Allow multiple types of input.
-    switch(to_lower(@s),
-        array('yes', '1', 'true', 'on'),
-            assign(@shared, true),
-        array('no', '0', 'false', 'off'),  
-            assign(@shared, false),
+    # Allow only true/false.
+    switch(@s,
+        array(true, false),
+            assign(@shared, @s),
         die('Invalid option.')
     )
     

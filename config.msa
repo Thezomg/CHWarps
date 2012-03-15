@@ -1,6 +1,8 @@
-# Subject to major change!
-
-*:/chwarpadd $name [$] = _warp_create($name)
-*:/chwarpto $name [$] = _warp_to($name)
-*:/chwarpprivate $name $private = _warp_private($name, $private)
-*:/chwarpshare $name $player $share = _warp_share($name, $player, $share)
+*:/chwarp [$] = >>>
+    try(
+        _warp_dispatch(parse_args($)),
+    @ex,
+        msg(color(red) 'Oops, an error occurred. Check the console!')
+        console(@ex)
+    )
+<<<
