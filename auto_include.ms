@@ -2,6 +2,7 @@
 #     +-<warp> array
 #     |   +-<name> string
 #     |        +-<location> vector
+#     |        +-<name> string
 #     |        +-<facing> vector
 #     |        +-<owner> string
 #     |        +-<isprivate> boolean
@@ -11,8 +12,52 @@
 #     |              +-...
 #     |
 #     +-options
+
 include('util.ms')
 include('dispatch.ms')
+
+proc(_warp_delete, @n,
+    assign(@name, to_lower(@n))
+    
+    if(_warp_exists(@name),
+        assign(@warp, _get_warp(@name))
+        
+        if(equals(to_lower(@warp['owner']), to_lower(player())),
+            _delete_warp(@name)
+            msg(color(green), 'Warp deleted.')
+        , # else
+            msg(color(red), 'You don\'t own this warp!')
+        )
+    , # else
+        msg(color(red), 'No warp with this id exists!')
+    )
+)
+
+proc(_warp_list,
+    # Get a list of warps, sensitive to if the warp
+    # is accessible by the user or not.
+    
+    assign(@warps, _get_warps())
+    assign(@player, to_lower(player()))
+    assign(@i, 1)
+    
+    msg('Warps you have access to:')
+    
+    foreach(@warps, @warp,
+        # User must be owner or shared, or warp must be
+        # public to be displayed.
+        
+        if(or(
+        equals(@warp['isprivate'], false),
+        equals(to_lower(@warp['owner']), @player),
+        array_contains(@warp['sharedto'], @player)),
+            # x) WarpName
+            msg(@i, ')' @warp['name'])
+        )
+        
+        inc(@i)
+    )
+)
 
 proc(_warp_create, @n,
     assign(@name, to_lower(@n))
@@ -28,6 +73,7 @@ proc(_warp_create, @n,
         array_set(@warp, 'facing', pfacing())
         array_set(@warp, 'sharedto', array())
         array_set(@warp, 'isprivate', true)
+        array_set(@warp, 'name', @n)
         
         _set_warp(@name, @warp)
         msg(concat(color(green), 'Warp created successfully!'))
@@ -38,6 +84,7 @@ proc(_warp_create, @n,
 
 proc(_warp_private, @n, @p,
     assign(@name, to_lower(@n))
+    assign(@player, to_lower(player()))
     
     # Allow multiple types of input.
     switch(to_lower(@p),
@@ -52,7 +99,7 @@ proc(_warp_private, @n, @p,
         assign(@warp, _get_warp(@name))
         
         # Must be owner to change this.
-        if(not(equals(to_lower(player()), @warp['owner'])),
+        if(not(equals(@player, to_lower(@warp['owner']))),
             die(concat(color(red), 'You do not own this warp!'))
         )
         
@@ -87,7 +134,7 @@ proc(_warp_share, @n, @p, assign(@s, true),
         assign(@warp, _get_warp(@name))
         
         # Make sure the player is the warp's owner.
-        if(equals(to_lower(player()), @warp['owner']),
+        if(equals(@player, to_lower(@warp['owner'])),
             if(equals(@shared, true),
                 # We want to share it.
                 
@@ -145,7 +192,7 @@ proc(_warp_to, @n,
         
         # Make sure the user has perms to go here!
         if(or(
-        equals(@info['owner'], @player), 
+        equals(to_lower(@warp['owner']), @player), 
         equals(@info['isprivate'], false),
         array_contains(@shared, @player)),
             # Poof.

@@ -26,7 +26,11 @@ proc(_warp_dispatch, @args,
                 die('Usage: /chwarp create <name>')
             ),
         'delete',
-            die('Not implemented yet!'),
+            if(array_index_exists(@args, 0),
+                _warp_delete(@args[0])
+            , # else
+                die('Usage: /chwarp delete <name>')
+            ),
         'setaccess',
             if(array_index_exists(@args, 1),
                 _warp_private(@args[0], @args[1])
@@ -34,19 +38,20 @@ proc(_warp_dispatch, @args,
                 die('Usage: /chwarp setaccess <name> <public|private>')
             ),
         'share',
-            if(array_index_exists(@args, 2),
+            if(array_index_exists(@args, 1),
                 _warp_share(@args[0], @args[1], true)
             , # else
                 die('Usage: /chwarp share <name> <player>')
             ),
         'unshare',
-            if(array_index_exists(@args, 2),
+            if(array_index_exists(@args, 1),
                 _warp_share(@args[0], @args[1], false)
             , # else
                 die('Usage: /chwarp unshare <name> <player>')
             ),
         'list',
-            die('Not implemented yet!'),
+            _warp_list()
+            return(),
         # default
             _warp_to(@first)
     )

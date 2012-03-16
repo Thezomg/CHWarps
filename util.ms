@@ -9,6 +9,23 @@ proc(_get_warp, @n,
     return(false)
 )
 
+proc(_get_warps,
+    assign(@info, get_values('entityreborn.chwarps.warps'))
+    
+    return(@info)
+)
+
+proc(_delete_warp, @n,
+    assign(@name, to_lower(@n))
+    
+    if(has_value(concat('entityreborn.chwarps.warps.', @name)),
+        clear_value(concat('entityreborn.chwarps.warps.', @name))
+        return(true)
+    , # else
+        return(false)
+    )
+)
+
 proc(_set_warp, @n, @warp,
     assign(@name, to_lower(@n))
     
