@@ -22,7 +22,9 @@ proc(_warp_delete, @n,
     if(_warp_exists(@name),
         assign(@warp, _get_warp(@name))
         
-        if(equals(to_lower(@warp['owner']), to_lower(player())),
+        if(or(
+        equals_ic(@warp['owner'], player()),
+        equals_ic(player(), '~console')),
             _delete_warp(@name)
             msg(color(green), 'Warp deleted.')
         , # else
@@ -39,7 +41,6 @@ proc(_warp_list,
     
     assign(@warps, _get_warps())
     assign(@player, to_lower(player()))
-    assign(@i, 1)
     
     msg('Warps you have access to:')
     
@@ -49,17 +50,31 @@ proc(_warp_list,
         
         if(or(
         equals(@warp['isprivate'], false),
-        equals(to_lower(@warp['owner']), @player),
-        array_contains(@warp['sharedto'], @player)),
+        equals_ic(@warp['owner'], @player),
+        array_contains(@warp['sharedto'], @player),
+        equals(@player, '~console')),
             # x) WarpName
-            msg(@i, ')' @warp['name'])
+            msg('-' @warp['name'])
         )
-        
-        inc(@i)
     )
 )
 
-proc(_warp_create, @n,
+proc(_warp_update, 
+    assign(@warps, _get_warps())
+    
+    foreach(@warps, @warp,
+        # User must be owner or shared, or warp must be
+        # public to be displayed.
+        
+        if(not(array_index_exists(@warp, 'welcome')),
+            assign(@warp['welcome'], 'Welcome to' @warp['name'])
+        )
+        
+        _set_warp(@warp['name'], @warp)
+    )
+)
+
+proc(_warp_create, @n, assign(@private, false),
     assign(@name, to_lower(@n))
     
     # Don't create a warp if this name is occupied.
@@ -72,13 +87,38 @@ proc(_warp_create, @n,
         array_set(@warp, 'location', ploc())
         array_set(@warp, 'facing', pfacing())
         array_set(@warp, 'sharedto', array())
-        array_set(@warp, 'isprivate', true)
+        array_set(@warp, 'isprivate', @private)
+        array_set(@warp, 'welcome', 'Welcome to' @n)
         array_set(@warp, 'name', @n)
         
         _set_warp(@name, @warp)
         msg(concat(color(green), 'Warp created successfully!'))
     , # else
         msg(concat(color(red), 'This warp already exists!'))
+    )
+)
+
+proc(_warp_welcome, @n, @message,
+    assign(@name, to_lower(@n))
+    
+    if(_warp_exists(@name),
+        assign(@warp, _get_warp(@name))
+        
+        # Must be owner to change this.
+        if(not(and(
+        equals_ic(player(), @warp['owner']),
+        equals(player(), '~console'))),
+            die(concat(color(red), 'You do not own this warp!'))
+        )
+        
+        # Change the private bit.
+        array_set(@warp, 'welcome', @message)
+        _set_warp(@name, @warp)
+        
+        # Notify.
+        die(concat(color(green), 'Welcome message changed.'))
+    , # else
+        die(concat(color(red), 'This warp doesn\'t exist!'))
     )
 )
 
@@ -99,7 +139,9 @@ proc(_warp_private, @n, @p,
         assign(@warp, _get_warp(@name))
         
         # Must be owner to change this.
-        if(not(equals(@player, to_lower(@warp['owner']))),
+        if(not(and(
+        equals_ic(@player, @warp['owner']),
+        equals(@player, '~console'))),
             die(concat(color(red), 'You do not own this warp!'))
         )
         
@@ -192,16 +234,22 @@ proc(_warp_to, @n,
         
         # Make sure the user has perms to go here!
         if(or(
-        equals(to_lower(@warp['owner']), @player), 
+        equals_ic(@info['owner'], @player), 
         equals(@info['isprivate'], false),
         array_contains(@shared, @player)),
             # Poof.
             pfacing(player(), @info['facing'][0], @info['facing'][1])
             set_ploc(player(), @info['location'])
+            
+            if(and(
+            is_string(@info['welcome']),
+            not(equals(@info['welcome'], ''))),
+                die(@info['welcome'])
+            )
         , # else
-            msg(concat(color(red), 'You do not have permission to visit this warp.'))
+            die(concat(color(red), 'You do not have permission to visit this warp.'))
         )
     , # else
-        msg(concat(color(red), 'This warp does not exist!'))
+        die(concat(color(red), 'This warp does not exist!'))
     )
 )
