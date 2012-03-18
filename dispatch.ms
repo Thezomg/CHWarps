@@ -23,7 +23,7 @@ proc(_warp_dispatch, @args,
         'update',
             # HIDDEN FEECHUR!
             _warp_update()
-            die(concat(color(green), 'Any warps were updated.')),
+            die(concat(color(green), 'Any outdated warps were updated.')),
         array('create', 'pcreate'),
             if(array_index_exists(@args, 0),
                 _warp_create(@args[0], equals_ic(@first, 'pcreate'))

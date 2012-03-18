@@ -16,8 +16,12 @@
 include('util.ms')
 include('dispatch.ms')
 
+proc(_warp_sanitize, @n,
+    return(reg_replace('[^0-9a-zA-Z-.]', '-', to_lower(@n)))
+)
+
 proc(_warp_delete, @n,
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(to_lower(@n)))
     
     if(_warp_exists(@name),
         assign(@warp, _get_warp(@name))
@@ -75,7 +79,7 @@ proc(_warp_update,
 )
 
 proc(_warp_create, @n, assign(@private, false),
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(to_lower(@n)))
     
     # Don't create a warp if this name is occupied.
     if(not(_warp_exists(@name)),
@@ -99,7 +103,7 @@ proc(_warp_create, @n, assign(@private, false),
 )
 
 proc(_warp_welcome, @n, @message,
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(to_lower(@n)))
     
     if(_warp_exists(@name),
         assign(@warp, _get_warp(@name))
@@ -123,7 +127,7 @@ proc(_warp_welcome, @n, @message,
 )
 
 proc(_warp_private, @n, @p,
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(to_lower(@n)))
     assign(@player, to_lower(player()))
     
     # Allow multiple types of input.
@@ -163,7 +167,7 @@ proc(_warp_private, @n, @p,
 proc(_warp_share, @n, @p, assign(@s, true),
     # Share or unshare a (private) warp.
     assign(@player, to_lower(@p))
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(to_lower(@n)))
     
     # Allow only true/false.
     switch(@s,
@@ -224,7 +228,7 @@ proc(_warp_share, @n, @p, assign(@s, true),
 )
 
 proc(_warp_to, @n,
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(to_lower(@n)))
     
     if(_warp_exists(@name),
         # Grab the info
