@@ -1,5 +1,5 @@
 proc(_get_warp, @n,
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(@n))
     
     if(_warp_exists(@name),
         assign(@info, get_value(concat('entityreborn.chwarps.warps.', @name)))
@@ -16,7 +16,7 @@ proc(_get_warps,
 )
 
 proc(_delete_warp, @n,
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(@n))
     
     if(has_value(concat('entityreborn.chwarps.warps.', @name)),
         clear_value(concat('entityreborn.chwarps.warps.', @name))
@@ -27,13 +27,13 @@ proc(_delete_warp, @n,
 )
 
 proc(_set_warp, @n, @warp,
-    assign(@name, to_lower(@n))
+    assign(@name, _warp_sanitize(@n))
     
     store_value(concat('entityreborn.chwarps.warps.', @name), @warp)
 )
 
 proc(_warp_exists, @name,
-    if(not(has_value(concat('entityreborn.chwarps.warps.', to_lower(@name)))),
+    if(not(has_value(concat('entityreborn.chwarps.warps.', _warp_sanitize(@name)))),
         return(false)
     )
     
