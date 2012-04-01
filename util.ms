@@ -28,6 +28,7 @@ proc(_delete_warp, @n,
 
 proc(_set_warp, @n, @warp,
     assign(@name, _warp_sanitize(@n))
+    console(@name)
     
     store_value(concat('entityreborn.chwarps.warps.', @name), @warp)
 )

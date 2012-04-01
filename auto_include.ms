@@ -17,7 +17,7 @@ include('util.ms')
 include('dispatch.ms')
 
 proc(_warp_sanitize, @n,
-    return(reg_replace('[^0-9a-zA-Z-.]', '-', to_lower(@n)))
+    return(reg_replace('[^0-9a-zA-Z-.]', '_', to_lower(@n)))
 )
 
 proc(_warp_delete, @n,
@@ -109,9 +109,8 @@ proc(_warp_welcome, @n, @message,
         assign(@warp, _get_warp(@name))
         
         # Must be owner to change this.
-        if(not(and(
-        equals_ic(player(), @warp['owner']),
-        equals(player(), '~console'))),
+        if(to_lower(player()) != @warp['owner'] &&
+        player() != '~console',
             die(concat(color(red), 'You do not own this warp!'))
         )
         
@@ -126,26 +125,16 @@ proc(_warp_welcome, @n, @message,
     )
 )
 
-proc(_warp_private, @n, @p,
+proc(_warp_private, @n, @private,
     assign(@name, _warp_sanitize(@n))
     assign(@player, to_lower(player()))
-    
-    # Allow multiple types of input.
-    switch(to_lower(@p),
-        'private',
-            assign(@private, true),
-        'public',  
-            assign(@private, false),
-        die('Invalid option.')
-    )
     
     if(_warp_exists(@name),
         assign(@warp, _get_warp(@name))
         
         # Must be owner to change this.
-        if(not(and(
-        equals_ic(@player, @warp['owner']),
-        equals(@player, '~console'))),
+        if(@player != @warp['owner'] &&
+        @player == '~console',
             die(concat(color(red), 'You do not own this warp!'))
         )
         
@@ -154,7 +143,7 @@ proc(_warp_private, @n, @p,
         _set_warp(@name, @warp)
         
         # Notify.
-        if(equals(@private, true),
+        if(@private,
             die(concat(color(green), @name 'is now private.'))
         , # else
             die(concat(color(green), @name 'is now public.'))
@@ -178,13 +167,13 @@ proc(_warp_share, @n, @p, assign(@s, true),
     
     if(_warp_exists(@name),
         assign(@warp, _get_warp(@name))
-        
         # Make sure the player is the warp's owner.
-        if(equals(@player, to_lower(@warp['owner'])),
-            if(equals(@shared, true),
-                # We want to share it.
+        if(player() == @warp['owner'] ||
+        player() == '~console',
+            if(@shared,
+                # Have a cookie.
                 
-                if(not(array_contains(@warp['sharedto'], @player)),
+                if(!array_contains(@warp['sharedto'], @player),
                     # Only add if the player isn't already in the list.
                     
                     array_push(@warp['sharedto'], @player)
@@ -204,7 +193,7 @@ proc(_warp_share, @n, @p, assign(@s, true),
                     
                     # Need to loop thru the whole list due to no array_remove_value (yet!).
                     foreach(@warp['sharedto'], @item, 
-                        if(equals(@item, @player),
+                        if(@item == @player,
                             array_remove(@warp['sharedto'], @i)
                             _set_warp(@name, @warp)
                             
@@ -223,7 +212,7 @@ proc(_warp_share, @n, @p, assign(@s, true),
             die(concat(color(red), 'This is not your warp to modify!'))
         )
     , # else
-        msg(concat(color(red), 'This warp doesn\'t exist!'))
+        die(concat(color(red), 'This warp doesn\'t exist!'))
     )
 )
 

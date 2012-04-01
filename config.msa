@@ -1,6 +1,6 @@
 *:/chwarp [$] = >>>
     try(
-        _warp_dispatch(parse_args($)),
+        _warp_dispatch($),
     @ex,
         msg(color(red) 'Oops, an error occurred. Check the console!')
         console(@ex)
