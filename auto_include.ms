@@ -81,6 +81,12 @@ proc(_warp_update,
 proc(_warp_create, @n, assign(@private, false),
     assign(@name, _warp_sanitize(@n))
     
+    if(
+    is_null(@name) ||
+    @name == '',
+        die(color(red) . 'You must specify a name!')
+    )
+    
     # Don't create a warp if this name is occupied.
     if(not(_warp_exists(@name)),
         # Set the data for this warp.
