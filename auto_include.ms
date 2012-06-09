@@ -116,7 +116,7 @@ proc(_warp_welcome, @n, @message,
         
         # Must be owner to change this.
         if(to_lower(player()) != @warp['owner'] &&
-        player() != '~console',
+        player() == '~console',
             die(concat(color(red), 'You do not own this warp!'))
         )
         
