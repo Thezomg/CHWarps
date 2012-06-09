@@ -65,10 +65,12 @@ proc(_warp_dispatch, @input,
             ),
             
         'welcome',
-            assign(@args, reg_match('^(.*?)\\s+([^ ]+)$', @args))
-            
+            assign(@args, parse_args(@args))
+            assign(@warp, @args[0])
+            array_remove(@args, 0)
+            assign(@message, array_implode(@args, ' '))
             if(@args,
-                _warp_welcome(@args[1], @args[2])
+                _warp_welcome(@warp, @message)
             , # else
                 die('Usage: /warp welcome <name> [message]')
             ),
