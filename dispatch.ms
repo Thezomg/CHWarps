@@ -65,10 +65,23 @@ proc(_warp_dispatch, @input,
             ),
             
         'welcome',
-            assign(@args, parse_args(@args))
-            assign(@warp, @args[0])
-            array_remove(@args, 0)
-            assign(@message, array_implode(@args, ' '))
+            @string = parse_args(@args)
+            @name = array()
+            foreach(@string, @text) {
+                array_push(@name, @text)
+                if(_warp_exists(array_implode(@name, ' '))) {
+                    @warp = array_implode(@name, ' ')
+                    @id = array_index(@string, @text)
+                    break()
+                }
+            }
+            @message = array()
+            foreach(@string, @text) {
+                if(array_index(@string, @text) > @id){
+                    array_push(@message, @text)
+                }
+            }
+            assign(@message, array_implode(@message, ' '))
             if(@args,
                 _warp_welcome(@warp, @message)
             , # else
