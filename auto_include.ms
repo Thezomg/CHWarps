@@ -108,7 +108,7 @@ proc(_warp_create, @n, assign(@private, false),
         @warp['facing'] = pfacing()
         @warp['sharedto'] = array()
         @warp['isprivate'] = @private
-        @warp['welcome'] = 'Welcome to' @n
+        @warp['welcome'] = ('Welcome to' @n)
         @warp['name'] = @n
         
         _set_warp(@name, @warp)
@@ -118,7 +118,7 @@ proc(_warp_create, @n, assign(@private, false),
     }
 )
 
-proc(_warp_welcome, @n, assign(@message, 'Welcome to' @n),
+proc(_warp_welcome, @n, @message,
     @name = _warp_sanitize(@n)
     @player = to_lower(player())
 

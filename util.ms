@@ -36,9 +36,24 @@ proc(_warp_exists, @name,
 proc(_warp_perm, @perm, @p = player(),
     @perm = 'chwarps.'. @perm
 
-    if(has_permission(@p, @perm)) {
+    if(has_permission(@p, @perm) || pisop(@p)) {
         return(true)
     } else {
         return(false)
     }
+)
+
+# finds a warp name from an array of values (usally made with parse_args()) : returns <mixed> : expects <array_string>
+proc(_search_warp, @arr,
+    @name = array()
+    foreach(@arr, @c) {
+        array_push(@name, @c)
+        if(_warp_exists(array_implode(@name, ' '))) {
+            @warp = array_implode(@name, ' ')
+            @id = array_index(@arr, @c)
+            return(array(@warp, @id))
+            break()
+        }
+    }
+    return(false)
 )
