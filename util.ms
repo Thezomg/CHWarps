@@ -1,41 +1,44 @@
+# gets the warps data called for : returns <array> : expects <warp_name>
 proc(_get_warp, @n,
-    assign(@name, _warp_sanitize(@n))
-    
-    if(_warp_exists(@name),
-        assign(@info, get_value(concat('entityreborn.chwarps.warps.', @name)))
+    @name = _warp_sanitize(@n)
+        @info = get_value('entityreborn.chwarps.warps.'. @name)
         return(@info)
-    )
-    
-    return(false)
 )
 
+# gets all warps : returns <array>
 proc(_get_warps,
-    assign(@info, get_values('entityreborn.chwarps.warps'))
-    
+    @info = get_values('entityreborn.chwarps.warps')
     return(@info)
 )
 
+# deletes warp from persistance : returns <null> : expects <warp_name>
 proc(_delete_warp, @n,
-    assign(@name, _warp_sanitize(@n))
-    
-    if(has_value(concat('entityreborn.chwarps.warps.', @name)),
-        clear_value(concat('entityreborn.chwarps.warps.', @name))
-        return(true)
-    , # else
-        return(false)
-    )
+    @name = _warp_sanitize(@n)
+    clear_value('entityreborn.chwarps.warps.'. @name)
 )
 
+# stores the warp in persistance with data provided : returns <null> : expects <warp_name>, <warp_data>
 proc(_set_warp, @n, @warp,
-    assign(@name, _warp_sanitize(@n))
-    
-    store_value(concat('entityreborn.chwarps.warps.', @name), @warp)
+    @name = _warp_sanitize(@n)
+    store_value('entityreborn.chwarps.warps.'. @name, @warp)
 )
 
+# checks if warp exists : returns <boolean> : expects <warp_name>
 proc(_warp_exists, @name,
-    if(not(has_value(concat('entityreborn.chwarps.warps.', _warp_sanitize(@name)))),
+    if(!has_value('entityreborn.chwarps.warps.'. _warp_sanitize(@name))) {
         return(false)
-    )
-    
-    return(true)
+    } else {
+        return(true)
+    }
+)
+
+# checks the permissions for chwarps : returns <boolean> : expects <permission>, [<player>]
+proc(_warp_perm, @perm, @p = player(),
+    @perm = 'chwarps.'. @perm
+
+    if(has_permission(@p, @perm)) {
+        return(true)
+    } else {
+        return(false)
+    }
 )

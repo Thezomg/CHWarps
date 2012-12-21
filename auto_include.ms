@@ -21,148 +21,161 @@ proc(_warp_sanitize, @n,
 )
 
 proc(_warp_delete, @n,
-    assign(@name, _warp_sanitize(@n))
+    @name = _warp_sanitize(@n)
+    @player = to_lower(player())
     
-    if(_warp_exists(@name),
-        assign(@warp, _get_warp(@name))
+    if(_warp_exists(@name)) {
+        @warp = _get_warp(@name)
         
-        if(or(
-        equals_ic(@warp['owner'], player()),
-        equals_ic(player(), '~console')),
+        if(
+        @warp['owner'] == @player ||
+        player() == '~console' ||
+        _warp_perm('admin')) {
             _delete_warp(@name)
-            msg(color(green), 'Warp deleted.')
-        , # else
-            msg(color(red), 'You don\'t own this warp!')
-        )
-    , # else
-        msg(color(red), 'No warp with this id exists!')
-    )
+            msg(color(green). 'Warp deleted.')
+        } else {
+            msg(color(red). 'You don\'t own this warp!')
+        }
+    } else {
+        msg(color(red). 'No warp with this id exists!')
+    }
 )
 
 proc(_warp_list,
     # Get a list of warps, sensitive to if the warp
     # is accessible by the user or not.
     
-    assign(@warps, _get_warps())
-    assign(@player, to_lower(player()))
+    @warps = _get_warps()
+    @player = to_lower(player())
     
     msg('Warps you have access to:')
     
-    foreach(@warps, @warp,
+    foreach(@warps, @warp) {
         # User must be owner or shared, or warp must be
         # public to be displayed.
         
-        if(or(
-        equals(@warp['isprivate'], false),
-        equals_ic(@warp['owner'], @player),
-        array_contains(@warp['sharedto'], @player),
-        equals(@player, '~console')),
-            # x) WarpName
+        if(
+        @warp['isprivate'] == false ||
+        @warp['owner'] == @player ||
+        array_contains(@warp['sharedto'], @player) ||
+        @player == '~console' ||
+        _warp_perm('admin')) {
+            # - WarpName
             msg('-' @warp['name'])
-        )
-    )
+        }
+    }
 )
 
-proc(_warp_update, 
-    assign(@warps, _get_warps())
+proc(_warp_update,
+    @warps = _get_warps()
     
     foreach(@warps, @warp,
-        # User must be owner or shared, or warp must be
-        # public to be displayed.
-        
-        if(not(array_index_exists(@warp, 'welcome')),
-            assign(@warp['welcome'], 'Welcome to' @warp['name'])
-        )
-        
+        if(!array_index_exists(@warp, 'welcome')) {
+            @warp['welcome'] = 'Welcome to' @warp['name']
+        }
+        @warp['owner'] = to_lower(@warp['owner'])
+
         _set_warp(@warp['name'], @warp)
     )
 )
 
 proc(_warp_create, @n, assign(@private, false),
-    assign(@name, _warp_sanitize(@n))
+    @name = _warp_sanitize(@n)
     
+    if(player() == '~console') {
+        die(color('red'). 'Player context is required.')
+    }
+
+    if(
+    !_warp_perm('create')) {
+        die(color('red'). 'You don\'t have proper permissions.')
+    }
+
     if(
     is_null(@name) ||
-    @name == '',
-        die(color(red) . 'You must specify a name!')
-    )
+    @name == '') {
+        die(color(red). 'You must specify a name!')
+    }
     
     # Don't create a warp if this name is occupied.
-    if(not(_warp_exists(@name)),
+    if(!_warp_exists(@name)) {
         # Set the data for this warp.
         # Default to private warps.
         
-        assign(@warp, array())
-        array_set(@warp, 'owner', player())
-        array_set(@warp, 'location', ploc())
-        array_set(@warp, 'facing', pfacing())
-        array_set(@warp, 'sharedto', array())
-        array_set(@warp, 'isprivate', @private)
-        array_set(@warp, 'welcome', 'Welcome to' @n)
-        array_set(@warp, 'name', @n)
+        @warp = array()
+        @warp['owner'] = to_lower(player())
+        @warp['location'] = ploc()
+        @warp['facing'] = pfacing()
+        @warp['sharedto'] = array()
+        @warp['isprivate'] = @private
+        @warp['welcome'] = 'Welcome to' @n
+        @warp['name'] = @n
         
         _set_warp(@name, @warp)
-        msg(concat(color(green), 'Warp created successfully!'))
-    , # else
-        msg(concat(color(red), 'This warp already exists!'))
-    )
+        msg(color(green). 'Warp created successfully!')
+    } else {
+        msg(color(red). 'This warp already exists!')
+    }
 )
 
-proc(_warp_welcome, @n, @message,
-    assign(@name, _warp_sanitize(@n))
-    
-    if(_warp_exists(@name),
-        assign(@warp, _get_warp(@name))
+proc(_warp_welcome, @n, assign(@message, 'Welcome to' @n),
+    @name = _warp_sanitize(@n)
+    @player = to_lower(player())
+
+    if(_warp_exists(@name)) {
+        @warp = _get_warp(@name)
         
         # Must be owner to change this.
-        if(to_lower(player()) != @warp['owner'] &&
-        player() == '~console',
-            die(concat(color(red), 'You do not own this warp!'))
-        )
+        if(!(@player == @warp['owner'] ||
+        player() == '~console' ||
+        _warp_perm('admin'))) {
+            die(color(red). 'You do not own this warp!')
+        }
         
-        # Change the private bit.
-        array_set(@warp, 'welcome', @message)
-        _set_warp(@name, @warp)
+        # Change the message
+        @warp['welcome'] = @message
+        _set_warp(@warp['name'], @warp)
         
         # Notify.
-        die(concat(color(green), 'Welcome message changed.'))
-    , # else
-        die(concat(color(red), 'This warp doesn\'t exist!'))
-    )
+        die(color(green). 'Welcome message changed.')
+    } else {
+        die(color(red). 'This warp doesn\'t exist!')
+    }
 )
 
 proc(_warp_private, @n, @private,
-    assign(@name, _warp_sanitize(@n))
-    assign(@player, to_lower(player()))
+    @name = _warp_sanitize(@n)
+    @player = to_lower(player())
     
-    if(_warp_exists(@name),
-        assign(@warp, _get_warp(@name))
+    if(_warp_exists(@name)) {
+        @warp = _get_warp(@name)
         
         # Must be owner to change this.
-        if(@player != @warp['owner'] &&
-        @player == '~console',
-            die(concat(color(red), 'You do not own this warp!'))
-        )
+        if(!(@player == @warp['owner'] ||
+        @player == '~console' ||
+        _warp_perm('admin'))) {
+            die(color(red). 'You do not own this warp!')
+        }
         
         # Change the private bit.
-        array_set(@warp, 'isprivate', @private)
-        _set_warp(@name, @warp)
+        @warp['isprivate'] = @private
+        _set_warp(@warp['name'], @warp)
         
         # Notify.
-        if(@private,
-            die(concat(color(green), @name 'is now private.'))
-        , # else
-            die(concat(color(green), @name 'is now public.'))
-        )
-    , # else
-        die(concat(color(red), 'This warp doesn\'t exist!'))
-    )
+        if(@private) {
+            die(color(green). @name 'is now private.')
+        } else {
+            die(color(green). @name 'is now public.')
+        }
+    } else {
+        die(color(red). 'This warp doesn\'t exist!')
+    }
 )
 
-proc(_warp_share, @n, @p, assign(@s, true),
+proc(_warp_share, @n, @p, @s = true,
     # Share or unshare a (private) warp.
-    assign(@player, to_lower(@p))
-    assign(@name, _warp_sanitize(@n))
+    @player = to_lower(@p)
+    @name = _warp_sanitize(@n)
     
     # Allow only true/false.
     switch(@s,
@@ -171,84 +184,71 @@ proc(_warp_share, @n, @p, assign(@s, true),
         die('Invalid option.')
     )
     
-    if(_warp_exists(@name),
-        assign(@warp, _get_warp(@name))
-        # Make sure the player is the warp's owner.
-        if(player() == @warp['owner'] ||
-        player() == '~console',
-            if(@shared,
-                # Have a cookie.
-                
-                if(!array_contains(@warp['sharedto'], @player),
-                    # Only add if the player isn't already in the list.
+    if(_warp_exists(@name)) {
+        @warp = _get_warp(@name)
+
+        # Must be owner to change this.
+        if(!(to_lower(player()) == @warp['owner'] ||
+        player() == '~console' ||
+        _warp_perm('admin'))) {
+            die(color(red). 'You do not own this warp!')
+        }
+
+        if(@shared) {
+            if(!array_contains(@warp['sharedto'], @player)) {
+                # Only add if the player isn't already in the list.
                     
-                    array_push(@warp['sharedto'], @player)
-                    _set_warp(@name, @warp)
+                array_push(@warp['sharedto'], @player)
+                _set_warp(@name, @warp)
                     
-                    die(concat(color(green), 'Player granted access.'))
-                , # else
-                    # Player already on list.
-                    
-                    die(concat(color(red), 'That player already has access to this warp!'))
-                )
-            , # else
-                # NO WARP 4 U!
-                
-                if(array_contains(@warp['sharedto'], @player),
-                    assign(@i, 0)
-                    
-                    # Need to loop thru the whole list due to no array_remove_value (yet!).
-                    foreach(@warp['sharedto'], @item, 
-                        if(@item == @player,
-                            array_remove(@warp['sharedto'], @i)
-                            _set_warp(@name, @warp)
-                            
-                            die(concat(color(green), 'Player removed from access.'))
-                        , # else
-                            inc(@i)
-                        )
-                    )
-                , # else
-                    # Player is already denied.
-                    
-                    die(concat(color(red), 'This player does not have access to this warp!'))
-                )
-            )
-        , # else
-            die(concat(color(red), 'This is not your warp to modify!'))
-        )
-    , # else
-        die(concat(color(red), 'This warp doesn\'t exist!'))
-    )
+                die(color(green). 'Player granted access.')
+            } else {
+                # Player already on list.        
+                die(color(red). 'That player already has access to this warp!')
+            }
+        } else {    
+            # remove player from shared list
+            if(array_contains(@warp['sharedto'], @player)) {
+                array_remove_values(@warp['sharedto'], @player)
+                die(color(green). 'Player removed from access.')
+            } else {
+                # Player is already denied.
+                die(color('red'). 'This Player did not have access to this warp!')
+            }
+        }
+    } else {
+        die(color(red). 'This warp doesn\'t exist!')
+    }
 )
 
 proc(_warp_to, @n,
-    assign(@name, _warp_sanitize(@n))
+    @name = _warp_sanitize(@n)
     
-    if(_warp_exists(@name),
+    if(_warp_exists(@name)) {
         # Grab the info
-        assign(@info, _get_warp(@name))
-        assign(@shared, @info['sharedto'])
-        assign(@player, to_lower(player()))
+        @info = _get_warp(@name)
+        @shared = @info['sharedto']
+        @player = to_lower(player())
         
         # Make sure the user has perms to go here!
-        if(or(
-        equals_ic(@info['owner'], @player), 
-        equals(@info['isprivate'], false),
-        array_contains(@shared, @player)),
+        if(
+        @info['owner'] == @player ||
+        @info['isprivate'] == false ||
+        array_contains(@shared, @player) ||
+        _warp_perm('admin')) {
             # Poof.
             pfacing(player(), @info['facing'][0], @info['facing'][1])
             set_ploc(player(), @info['location'])
             
-            if(and(
-            is_string(@info['welcome']),
-            not(equals(@info['welcome'], ''))),
+            if(
+            is_string(@info['welcome']) &&
+            !@info['welcome'] == '') {
                 die(@info['welcome'])
-            )
-        , # else
-            die(concat(color(red), 'You do not have permission to visit this warp.'))
-        )
-    , # else
-        die(concat(color(red), 'This warp does not exist!'))
-    )
+            }
+        } else {
+            die(color(red). 'You do not have permission to visit this warp.')
+        }
+    } else {
+        die(color(red). 'This warp does not exist!')
+    }
 )
