@@ -17,7 +17,7 @@ include('util.ms')
 include('dispatch.ms')
 
 proc(_warp_sanitize, @n,
-    return(reg_replace('[^0-9a-zA-Z-.]', '_', to_lower(@n)))
+    return(reg_replace('[^0-9a-zA-Z.]', '_', to_lower(@n)))
 )
 
 proc(_warp_delete, @n,
@@ -163,9 +163,9 @@ proc(_warp_private, @n, @private,
         
         # Notify.
         if(@private) {
-            die(color(green). @name 'is now private.')
+            die(color(green). @warp['name'] 'is now private.')
         } else {
-            die(color(green). @name 'is now public.')
+            die(color(green). @warp['name'] 'is now public.')
         }
     } else {
         die(color(red). 'This warp doesn\'t exist!')
@@ -210,6 +210,7 @@ proc(_warp_share, @n, @p, @s = true,
             # remove player from shared list
             if(array_contains(@warp['sharedto'], @player)) {
                 array_remove_values(@warp['sharedto'], @player)
+                _set_warp(@name, @warp)
                 die(color(green). 'Player removed from access.')
             } else {
                 # Player is already denied.

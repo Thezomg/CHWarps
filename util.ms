@@ -20,7 +20,7 @@ proc(_delete_warp, @n,
 # stores the warp in persistance with data provided : returns <null> : expects <warp_name>, <warp_data>
 proc(_set_warp, @n, @warp,
     @name = _warp_sanitize(@n)
-    store_value('entityreborn.chwarps.warps.'. @name, @warp)
+    store_value('entityreborn.chwarps.warps.' .@name, @warp)
 )
 
 # checks if warp exists : returns <boolean> : expects <warp_name>
@@ -55,5 +55,5 @@ proc(_search_warp, @arr,
             break()
         }
     }
-    return(false)
+    return(array(false))
 )
