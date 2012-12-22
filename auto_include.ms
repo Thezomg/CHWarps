@@ -232,11 +232,11 @@ proc(_warp_to, @n,
         @player = to_lower(player())
         
         # Make sure the user has perms to go here!
-        if(
+        if((
         @info['owner'] == @player ||
         @info['isprivate'] == false ||
         array_contains(@shared, @player) ||
-        _warp_perm('admin')) {
+        _warp_perm('admin')) && _warp_perm('warp')) {
             # Poof.
             pfacing(player(), @info['facing'][0], @info['facing'][1])
             set_ploc(player(), @info['location'])
