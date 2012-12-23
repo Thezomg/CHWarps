@@ -2,7 +2,7 @@
     try(
         _warp_dispatch($),
     @ex,
-        msg(color(red) 'Oops, an error occurred. Check the console!')
+        msg(color(red). 'Oops, an error occurred. Check the console!')
         console(@ex)
     )
 <<<

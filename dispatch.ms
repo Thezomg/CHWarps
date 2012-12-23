@@ -1,13 +1,14 @@
 proc(_warp_dispatch, @input,
     # Parse the incoming command, depending on it's first
     # word.
-    
+
     # Called with empty command?
-    assign(@match, reg_match('^\\s*([^ ]+)(\\s+(.*)\\s*)?$', @input))
-    if(@match,
-        assign(@first, to_lower(@match[1]))
-        assign(@args, @match[3])
-    , # else
+
+    @match = parse_args(@input)
+    if(array_size(@match)) {
+        @first = array_remove(@match, 0)
+        @args = @match
+    } else {
         msg('The following commands are available:')
         msg('- ', color(green), '/warp', color(white), ': show this message')
         msg('- ', color(green), '/warp [p]create <name>', color(white), ': create a new warp. Private if pcreate is used.')
@@ -20,82 +21,101 @@ proc(_warp_dispatch, @input,
         msg('- ', color(green), '/warp uninvite <name> <player>', color(white), ': disallow a player to bypass private warp status.')
         msg('- ', color(green), '/warp list', color(white), ': list available public warps as well as warps shared to you.')
         return()
-    )
+    }
     
     switch(@first,
         'update',
-            # HIDDEN FEECHUR!
+
             _warp_update()
-            die(concat(color(green), 'Any outdated warps were updated.')),
+            die(color(green). 'Any outdated warps were updated.'),
             
         array('set', 'create', 'pcreate'),
-            assign(@args, reg_match('^(.+)$', @args))
             
-            if(@args,
-                _warp_create(@args[1], @first == 'pcreate')
-            , # else
+            if(array_size(@args)) {
+                _warp_create(array_implode(@args, ' '), @first == 'pcreate')
+            } else {
                 die('Usage: /warp [[p]create|set] <name>')
-            ),
+            },
             
         'delete',
-            assign(@args, reg_match('^(.+)$', @args))
             
-            if(@args,
-                _warp_delete(@args[1])
-            , # else
+            if(array_size(@args)) {
+                @warp = _search_warp(@args)[0]
+                _warp_delete(@warp)
+            } else {
                 die('Usage: /warp delete <name>')
-            ),
+            },
             
         'public',
-            assign(@args, reg_match('^(.+)$', @args))
             
-            if(@args,
-                _warp_private(@args[1], false)
-            , # else
+            if(array_size(@args)) {
+                @warp = _search_warp(@args)[0]
+                _warp_private(@warp, false)
+            } else {
                 die('Usage: /warp public <name>')
-            ),
+            },
             
         'private',
-            assign(@args, reg_match('^(.+)$', @args))
             
-            if(@args,
-                _warp_private(@args[1], true)
-            , # else
+            if(array_size(@args)) {
+                @warp = _search_warp(@args)[0]
+                _warp_private(@warp, true)
+            } else {
                 die('Usage: /warp private <name>')
-            ),
+            },
             
         'welcome',
-            assign(@args, parse_args(@args))
-            assign(@warp, @args[0])
-            array_remove(@args, 0)
-            assign(@message, array_implode(@args, ' '))
-            if(@args,
-                _warp_welcome(@warp, @message)
-            , # else
+            if(array_size(@args)) {
+                @data = _search_warp(@args)
+                @warp = @data[0]
+                @id = @data[1]
+                @message = array()
+                foreach(@args, @key, @n) {
+                    if(@key > @id) {
+                        array_push(@message, @n)
+                    }
+                }
+                _warp_welcome(@warp, array_implode(@message, ' '))
+            } else {
                 die('Usage: /warp welcome <name> [message]')
-            ),
+            },
             
         'invite',
-            assign(@args, reg_match('^(.*?)\\s+([^ ]+)$', @args))
             
-            if(@args,
-                _warp_share(@args[1], @args[2], true)
-            , # else
+            if(array_size(@args)) {
+                @data = _search_warp(@args)
+                @warp = @data[0]
+                @id = @data[1]
+                foreach(@args, @n) {
+                    if(array_index(@args, @n) > @id) {
+                    @player = @n
+                    break()
+                    }
+                }
+                _warp_share(@warp, @player, true)
+            } else {
                 die('Usage: /warp invite <name> <player>')
-            ),
+            },
             
         'uninvite',
-            assign(@args, reg_match('^(.*?)\\s+([^ ]+)$', @args))
             
-            if(@args,
-                _warp_share(@args[1], @args[2], false)
-            , # else
+            if(array_size(@args)) {
+                @data = _search_warp(@args)
+                @warp = @data[0]
+                @id = @data[1]
+                foreach(@args, @n) {
+                    if(array_index(@args, @n) > @id) {
+                    @player = @n
+                    break()
+                    }
+                }
+                _warp_share(@args[0], @args[1], false)
+            } else {
                 die('Usage: /warp uninvite <name> <player>')
-            ),
+            },
             
         'list',
-            _warp_list()
-            return(),
+            _warp_list(),
         # default
             _warp_to(@input)
     )
