@@ -244,7 +244,7 @@ proc(_warp_to, @n,
             if(
             is_string(@info['welcome']) &&
             !@info['welcome'] == '') {
-                die(colorize(@info['welcome']))
+                msg(colorize(@info['welcome']))
             }
         } else {
             die(color(red). 'You do not have permission to visit this warp.')
