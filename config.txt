@@ -1,0 +1,2 @@
+Components -
+	Warp Signs: true

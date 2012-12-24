@@ -57,3 +57,15 @@ proc(_search_warp, @arr,
     }
     return(array(false))
 )
+
+proc(_warp_config, @option,
+    @config = read('config.txt')
+    @lines = split('\n', @config)
+
+    foreach(@lines, @line,
+        @data = split(':', @line)
+        if(trim(@data[0]) == @option) {
+            return(trim(@data[1]))
+        }
+    )
+)
