@@ -5,6 +5,11 @@ proc(_get_warp, @n,
         return(@info)
 )
 
+# returns a storeable version of the warp
+proc(_warp_sanitize, @n,
+    return(reg_replace('[^0-9a-zA-Z.]', '_', to_lower(@n)))
+)
+
 # gets all warps : returns <array>
 proc(_get_warps,
     @info = get_values('entityreborn.chwarps.warps')

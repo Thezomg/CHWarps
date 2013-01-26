@@ -1,24 +1,19 @@
-# entityreborn.warps
-#     +-<warp> array
-#     |   +-<name> string
-#     |        +-<location> vector
-#     |        +-<name> string
-#     |        +-<facing> vector
-#     |        +-<owner> string
-#     |        +-<isprivate> boolean
-#     |        +-<sharedto> array
-#     |              +-<player> string
-#     |              +-<player> string
-#     |              +-...
-#     |
-#     +-options
+# entityreborn.warps.
+#   +-<warp> array
+#   |   +-<name> string
+#   |   +-<location> vector
+#   |   +-<facing> vector
+#   |   +-<owner> string
+#   |   +-<isprivate> boolean
+#   |   +-<sharedto> array
+#   |       +-<player> string
+#   |       +-<player> string
+#   |       +-...
+#   |
+#   +-options
 
 include('util.ms')
 include('dispatch.ms')
-
-proc(_warp_sanitize, @n,
-    return(reg_replace('[^0-9a-zA-Z.]', '_', to_lower(@n)))
-)
 
 proc(_warp_delete, @n,
     @name = _warp_sanitize(@n)
