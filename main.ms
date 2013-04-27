@@ -1,5 +1,4 @@
 if(_warp_config('Warp Signs') == 'true') {
-	msg(_warp_config('Warp Signs'))
 	console('[CHWarps] Warp Signs enabled', false)
 	# Warp signs - warping
 	bind(player_interact, null, array(block: 68, button: 'right'), @event,
