@@ -57,7 +57,6 @@ proc(_search_warp, @arr,
             @warp = array_implode(@name, ' ')
             @id = array_index(@arr, @c)
             return(array(@warp, @id))
-            break()
         }
     }
     return(array(false))
